@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shared Number Grid (1–500)</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    .ranges { margin: 20px; }
+    .ranges button { padding: 10px; margin: 5px; }
+    .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin: 20px; }
+    .cell { border: 1px solid #555; padding: 10px; cursor: pointer; }
+    .cell.on { background: black; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Shared Number Grid (1–500)</h1>
+  <div class="ranges">
+    <button onclick="showRange(1,100)">1–100</button>
+    <button onclick="showRange(101,200)">101–200</button>
+    <button onclick="showRange(201,300)">201–300</button>
+    <button onclick="showRange(301,400)">301–400</button>
+    <button onclick="showRange(401,500)">401–500</button>
+  </div>
+  <div id="grid" class="grid"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let start = 1, end = 100;
+
+    function showRange(s, e) {
+      start = s; end = e;
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      for (let i = start; i <= end; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.textContent = i;
+        cell.onclick = () => toggleCell(i);
+        db.ref("grid/" + i).on("value", snap => {
+          if (snap.val()) cell.classList.add("on");
+          else cell.classList.remove("on");
+        });
+        grid.appendChild(cell);
+      }
+    }
+
+    function toggleCell(num) {
+      const ref = db.ref("grid/" + num);
+      ref.once("value").then(snap => {
+        const newState = !snap.val();
+        ref.set(newState);
+        db.ref("latestNumber").set(num);
+      });
+    }
+
+    renderGrid();
+  </script>
+</body>
+</html>
