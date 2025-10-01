@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Now Serving</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<style>
+  html,body {
+    height: 100%;
+    margin: 0;
+    background: #111;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+  }
+  #label {
+    font-size: 8vw;
+    margin-bottom: 20px;
+  }
+  #num {
+    font-size: 40vw;
+    font-weight: bold;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div id="label">Now Serving</div>
+  <div id="num">—</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCWWnMsge75Q3_MDF9Aj9wo4C5KD6RVGfw",
+  authDomain: "q-matic-b7d77.firebaseapp.com",
+  databaseURL: "https://q-matic-b7d77-default-rtdb.firebaseio.com",
+  projectId: "q-matic-b7d77",
+  storageBucket: "q-matic-b7d77.firebasestorage.app",
+  messagingSenderId: "908187704899",
+  appId: "1:908187704899:web:b8bcf33cda90bafe81bef6",
+  measurementId: "G-VT1P6V5TEY"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const numEl = document.getElementById('num');
+let timeoutId = null;
+
+// 🔹 listen to "latest" only
+db.ref('latest').on('value', snap => {
+  const data = snap.val();
+  if (data) {
+    numEl.textContent = data.number;
+
+    // Clear any existing timeout
+    if (timeoutId) clearTimeout(timeoutId);
+
+    // Hide after 30s if no new number pressed
+    timeoutId = setTimeout(() => {
+      numEl.textContent = "—";
+    }, 30000);
+  }
+});
+</script>
+</body>
+</html>
